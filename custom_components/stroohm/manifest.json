@@ -1,0 +1,15 @@
+{
+  "domain": "stroohm",
+  "name": "Stroohm",
+  "codeowners": [
+    "@HMFons"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/HMFons/HomeAssistant-Stroohm",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/HMFons/HomeAssistant-Stroohm/issues",
+  "requirements": [],
+  "version": "0.0.1"
+}
