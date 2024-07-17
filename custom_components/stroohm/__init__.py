@@ -1,13 +1,13 @@
-"""
-Custom integration to integrate Stroohm dashboard with Home Assistant.
-"""
-from homeassistant.core import HomeAssistant, Config
+"""Custom integration to integrate Stroohm dashboard with Home Assistant."""
+
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
 
 
-async def async_setup(hass: HomeAssistant, config: Config) -> bool:
+async def async_setup(hass: HomeAssistant, _: ConfigType) -> bool:
     """Set up the Stroohm component from yaml configuration."""
     hass.data.setdefault(DOMAIN, {})
     return True

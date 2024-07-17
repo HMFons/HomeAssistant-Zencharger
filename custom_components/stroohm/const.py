@@ -1,3 +1,7 @@
-"""Constants for Stroohm."""
+"""Constants for the Stroohm integration."""
+
 # Base constants
-DOMAIN = 'stroohm'
+DOMAIN = "stroohm"
+
+# Configuration
+CONF_CREDENTIALS = "credentials"
