@@ -12,7 +12,8 @@
             "user": {
                 "data": {
                     "host": "Host",
-                    "password": "Password"
+                    "password": "Password",
+                    "username": "Username"
                 }
             }
         }

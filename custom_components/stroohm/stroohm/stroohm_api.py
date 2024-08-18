@@ -85,3 +85,11 @@ class StroohmApi:
 
 class StroohmApiError(Exception):
     """Generic Stroohm Api error."""
+
+
+class StroohmApiAccessFrequencyTooHighError(StroohmApiError):
+    pass
+
+
+class StroohmApiErrorInvalidAccessToCurrentInterfaceError(StroohmApiError):
+    pass
