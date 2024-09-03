@@ -31,29 +31,11 @@ from .stroohm.stroohm_api import StroohmApi, StroohmApiError
 _LOGGER = logging.getLogger(__name__)
 
 
-def filter_for_enabled_stations(station, device_registry):
-    device_from_registry = device_registry.async_get_device(
-        identifiers={(DOMAIN, station.code)}
-    )
-    if device_from_registry is not None and device_from_registry.disabled:
-        _LOGGER.debug(
-            "Station is disabled by the user",
-            extra={"code": station.code, "station": station},
-        )
-        return False
-
-    return True
-
-
 async def add_entities_for_stations(
     hass, async_add_entities, stations, api: StroohmApi
 ):
-    device_registry = dr.async_get(hass)
-    stations = list(
-        filter(lambda x: filter_for_enabled_stations(x, device_registry), stations)
-    )
     station_codes = [station.code for station in stations]
-    _LOGGER.debug("Adding entities for stations", extra={len(station_codes)})
+    _LOGGER.log("Adding entities for stations", extra={len(station_codes)})
 
     await _add_entities_for_stations_real_kpi_data(
         hass, async_add_entities, stations, api
@@ -162,12 +144,8 @@ async def add_entities_for_stations(
 async def _add_entities_for_stations_real_kpi_data(
     hass, async_add_entities, stations, api: StroohmApi
 ):
-    device_registry = dr.async_get(hass)
-    stations = list(
-        filter(lambda x: filter_for_enabled_stations(x, device_registry), stations)
-    )
     station_codes = [station.code for station in stations]
-    _LOGGER.debug(
+    _LOGGER.log(
         "Adding stations_real_kpi_data entities for stations",
         extra={len(station_codes)},
     )
@@ -274,12 +252,8 @@ async def _add_entities_for_stations_real_kpi_data(
 async def _add_entities_for_stations_year_kpi_data(
     hass, async_add_entities, stations, api: StroohmApi
 ):
-    device_registry = dr.async_get(hass)
-    stations = list(
-        filter(lambda x: filter_for_enabled_stations(x, device_registry), stations)
-    )
     station_codes = [station.code for station in stations]
-    _LOGGER.debug(
+    _LOGGER.log(
         "Adding stations_year_kpi_data entities for stations",
         extra={len(station_codes)},
     )
@@ -307,7 +281,7 @@ async def _add_entities_for_stations_year_kpi_data(
                 ATTR_STATION_REAL_KPI_DATA_ITEM_MAP
             ]
 
-        _LOGGER.debug("async_update_station_year_kpi_data.", extra={data})
+        _LOGGER.log("async_update_station_year_kpi_data.", extra={data})
 
         return data
 
@@ -433,7 +407,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             config[CONF_CREDENTIALS][CONF_HOST],
             config[CONF_CREDENTIALS][CONF_PASSWORD],
         )
-        stations = await hass.async_add_executor_job(api.get_station_list)
+        stations = ["station"] * 101
 
         if not stations:
             _LOGGER.error("No stations found")
@@ -442,4 +416,5 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         if len(stations) > 100:
             _LOGGER.error("More than 100 stations found, which is not a good idea!")
 
-        await add_entities_for_stations(hass, async_add_entities, stations, api)
+        # TODO
+        # await add_entities_for_stations(hass, async_add_entities, stations, api)

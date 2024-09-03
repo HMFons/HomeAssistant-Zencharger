@@ -62,7 +62,7 @@ class DeviceRealKpiDataCoordinator(DataUpdateCoordinator):
         self.counter += 1
 
         try:
-            _LOGGER.debug(
+            _LOGGER.log(
                 "Fetching data for type ID",
                 extra={"call": self.name, "type_id": type_id_to_fetch},
             )
@@ -103,14 +103,14 @@ class DeviceRealKpiDataCoordinator(DataUpdateCoordinator):
                 identifiers={(DOMAIN, device.device_id)}
             )
             if device_from_registry is not None and device_from_registry.disabled:
-                _LOGGER.debug("Device is disabled by the user", extra={device})
+                _LOGGER.log("Device is disabled by the user", extra={device})
                 continue
 
             station_from_registry = device_registry.async_get_device(
                 identifiers={(DOMAIN, device.station_code)}
             )
             if station_from_registry is not None and station_from_registry.disabled:
-                _LOGGER.debug("Device linked to a disabled station", extra={device})
+                _LOGGER.log("Device linked to a disabled station", extra={device})
                 continue
 
             if device.type_id not in device_ids_grouped_per_type_id:

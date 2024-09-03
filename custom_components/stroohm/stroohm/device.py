@@ -37,7 +37,7 @@ class StroohmDevice:
 
     @property
     def device_type(self) -> str:
-        _LOGGER.debug(self.type_id)
+        _LOGGER.log(self.type_id)
         if self.type_id == 1:
             return "String inverter"
         if self.type_id == 2:

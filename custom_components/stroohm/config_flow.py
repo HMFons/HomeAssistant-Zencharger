@@ -45,7 +45,7 @@ class StroohmConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             except StroohmApiError as error:
-                _LOGGER.debug(error)
+                _LOGGER.log(error)
                 errors["base"] = "invalid_credentials"
 
         return self.async_show_form(

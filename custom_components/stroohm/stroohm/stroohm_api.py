@@ -2,9 +2,11 @@
 
 import logging
 
-from requests import post
+import httpx
+from requests import get
 
 from .const import ATTR_DATA, ATTR_FAIL_CODE
+from .stroohm_websocket import StroohmWebSocket
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,6 +18,12 @@ class StroohmApi:
         self._sessionId = None
         self._host = host
         self._password = password
+        self.websocket = StroohmWebSocket(host)
+
+    async def ws_connect(self):
+        if self._sessionId is None:
+            self.login()
+        await self.websocket.ws_connect(self._sessionId)
 
     def login(self) -> str:
         """Login to api to get Session id."""
@@ -28,9 +36,8 @@ class StroohmApi:
             "Password": self._password,
             "PersistentSession": True,
         }
-
         try:
-            response = post(url, headers=headers, json=body, timeout=1.5)
+            response = httpx.post(url, headers=headers, json=body, timeout=1.5)
             response.raise_for_status()
 
             if "Set-Cookie" in response.headers:
@@ -40,6 +47,26 @@ class StroohmApi:
             raise StroohmApiError("Could not login with given credentials")
         except Exception as error:
             raise StroohmApiError("Could not login with given credentials")
+
+    def status(self) -> str:
+        """Get status from API."""
+
+        url = self._host + "/api/v1/auth/status"
+        headers = {
+            "accept": "application/json",
+        }
+
+        try:
+            response = get(url, headers=headers, timeout=1.5)
+            response.raise_for_status()
+
+            if "Set-Cookie" in response.headers:
+                self._sessionId = response.headers["Set-Cookie"]
+                return response.headers.get("Set-Cookie")
+
+            raise StroohmApiError("Could not get status")
+        except Exception as error:
+            raise StroohmApiError("Could not get status")
 
     def _do_call(self, url: str, body: dict):
         if self._sessionId is None:
@@ -51,20 +78,20 @@ class StroohmApi:
         }
 
         try:
-            response = post(url, headers=headers, json=body, timeout=5)
+            response = httpx.post(url, headers=headers, json=body, timeout=5)
             response.raise_for_status()
             json_data = response.json()
-            _LOGGER.debug(f"JSON data for {url}: {json_data}")
+            _LOGGER.log(f"JSON data for {url}: {json_data}")
 
             # Session Expired code?
             if ATTR_FAIL_CODE in json_data and json_data[ATTR_FAIL_CODE] == 305:
-                _LOGGER.debug("Token expired, trying to login again")
+                _LOGGER.log("Token expired, trying to login again")
                 # token expired
                 self._sessionId = None
                 return self._do_call(url, body)
 
             if ATTR_FAIL_CODE in json_data and json_data[ATTR_FAIL_CODE] != 0:
-                _LOGGER.debug(
+                _LOGGER.log(
                     f"Error calling {url}: {json_data[ATTR_DATA]}, failcode: {json_data[ATTR_FAIL_CODE]}"
                 )
                 raise StroohmApiError(
