@@ -5,6 +5,9 @@ import logging
 import httpx
 from requests import get
 
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+
 from .const import ATTR_DATA, ATTR_FAIL_CODE
 from .stroohm_websocket import StroohmWebSocket
 
@@ -14,16 +17,20 @@ _LOGGER = logging.getLogger(__name__)
 class StroohmApi:
     """Api class."""
 
-    def __init__(self, host: str, password: str):
+    @property
+    def websocket(self):
+        return self._websocket
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry):
         self._sessionId = None
-        self._host = host
-        self._password = password
-        self.websocket = StroohmWebSocket(host)
+        self._host = entry.data["credentials"]["host"]
+        self._password = entry.data["credentials"]["password"]
+        self._websocket = StroohmWebSocket(hass, entry)
 
     async def ws_connect(self):
         if self._sessionId is None:
             self.login()
-        await self.websocket.ws_connect(self._sessionId)
+        await self._websocket.ws_connect(self._sessionId)
 
     def login(self) -> str:
         """Login to api to get Session id."""
@@ -81,19 +88,14 @@ class StroohmApi:
             response = httpx.post(url, headers=headers, json=body, timeout=5)
             response.raise_for_status()
             json_data = response.json()
-            _LOGGER.log(f"JSON data for {url}: {json_data}")
 
             # Session Expired code?
             if ATTR_FAIL_CODE in json_data and json_data[ATTR_FAIL_CODE] == 305:
-                _LOGGER.log("Token expired, trying to login again")
                 # token expired
                 self._sessionId = None
                 return self._do_call(url, body)
 
             if ATTR_FAIL_CODE in json_data and json_data[ATTR_FAIL_CODE] != 0:
-                _LOGGER.log(
-                    f"Error calling {url}: {json_data[ATTR_DATA]}, failcode: {json_data[ATTR_FAIL_CODE]}"
-                )
                 raise StroohmApiError(
                     f"Retrieving the data for {url} failed with failCode: {json_data[ATTR_FAIL_CODE]}, message: {json_data[ATTR_DATA]}"
                 )

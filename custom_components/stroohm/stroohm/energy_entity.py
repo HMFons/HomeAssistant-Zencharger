@@ -1,13 +1,13 @@
 from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.const import UnitOfPower
+from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.helpers.entity import EntityDescription
 
 from .entity import StroohmEntity
 from .stroohm_websocket import StroohmWebSocket
 
 
-class StroohmPowerEntity(StroohmEntity):
-    """Base class for all StroohmPowerEntity entities."""
+class StroohmEnergyEntity(StroohmEntity):
+    """Base class for all StroohmEnergyEntity entities."""
 
     def __init__(
         self,
@@ -19,18 +19,18 @@ class StroohmPowerEntity(StroohmEntity):
 
     @property
     def device_class(self):
-        return SensorDeviceClass.POWER
+        return SensorDeviceClass.ENERGY
 
     @property
     def unit_of_measurement(self):
-        return UnitOfPower.WATT
+        return UnitOfEnergy.WATT_HOUR
 
 
-class StroohmPowerEntityRealtime(StroohmPowerEntity):
+class StroohmEnergyEntityRealtime(StroohmEnergyEntity):
     pass
 
 
-class StroohmPowerEntityRealtimeInWatt(StroohmPowerEntity):
+class StroohmEnergyEntityRealtimeInWatt(StroohmEnergyEntity):
     @property
     def unit_of_measurement(self):
         return UnitOfPower.WATT

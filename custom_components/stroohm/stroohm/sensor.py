@@ -4,14 +4,14 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import callback
 from homeassistant.helpers.entity import EntityDescription
 
-from .energy_entity import StroohmEnergyEntity
+from .entity import StroohmEntity
 from .stroohm_websocket import StroohmWebSocket
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class StroohmEnergySensor(StroohmEnergyEntity, SensorEntity):
-    """Base class for all StroohmEnergySensor sensors."""
+class StroohmSensor(StroohmEntity, SensorEntity):
+    """Base class for all StroohmPowerSensor sensors."""
 
     def __init__(
         self,

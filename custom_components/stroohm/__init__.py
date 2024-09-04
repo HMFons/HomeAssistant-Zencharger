@@ -14,6 +14,8 @@ from .stroohm.stroohm_websocket import WebSocketError
 
 _LOGGER = logging.getLogger(__name__)
 
+type StroohmConfigEntry = ConfigEntry[StroohmApi]
+
 
 async def async_setup(hass: HomeAssistant, _: ConfigType) -> bool:
     """Set up the Stroohm component from yaml configuration."""
@@ -32,9 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])
     )
 
-    api = StroohmApi(
-        entry.data["credentials"]["host"], entry.data["credentials"]["password"]
-    )
+    api = StroohmApi(hass, entry)
 
     try:
         await api.ws_connect()
@@ -45,7 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = api
 
     async def _async_disconnect_websocket(_: Event) -> None:
-        await api.websocket.disconnect()
+        await api._websocket.disconnect()
 
     entry.async_on_unload(
         hass.bus.async_listen_once(

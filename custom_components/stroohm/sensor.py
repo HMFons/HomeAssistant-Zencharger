@@ -1,420 +1,105 @@
 """Stroohm sensor."""
 
-from datetime import timedelta
 import logging
 
-from homeassistant.const import CONF_HOST, CONF_PASSWORD
-from homeassistant.exceptions import IntegrationError
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntityDescription,
+    SensorStateClass,
+)
+from homeassistant.const import UnitOfEnergy, UnitOfPower
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from . import StroohmConfigEntry
 from .const import (
-    CONF_CREDENTIALS,
-    DOMAIN,
-    ID_REALTIME_POWER,
-    ID_TOTAL_CURRENT_DAY_ENERGY,
-    NAME_REALTIME_POWER,
-    NAME_TOTAL_CURRENT_DAY_ENERGY,
+    ID_INSTANTANEOUS_POWER,
+    ID_INSTANTANEOUS_POWER_PHASE_1,
+    ID_INSTANTANEOUS_POWER_PHASE_2,
+    ID_INSTANTANEOUS_POWER_PHASE_3,
+    ID_SESSION_ENERGY,
+    ID_STATE,
+    ID_TOTAL_ENERGY,
 )
-from .device_real_kpi_coordinator import DeviceRealKpiDataCoordinator
-from .stroohm.const import (
-    ATTR_DATA_COLLECT_TIME,
-    ATTR_DEVICE_REAL_KPI_ACTIVE_POWER,
-    ATTR_STATION_CODE,
-    ATTR_STATION_REAL_KPI_DATA_ITEM_MAP,
-    ATTR_STATION_REAL_KPI_TOTAL_CURRENT_DAY_ENERGY,
-)
-from .stroohm.energy_sensor import StroohmEnergySensorTotalCurrentDay
-from .stroohm.power_entity import StroohmPowerEntityRealtimeInWatt
-from .stroohm.stroohm_api import StroohmApi, StroohmApiError
+from .stroohm.energy_sensor import StroohmEnergySensor
+from .stroohm.power_sensor import StroohmPowerSensor
+from .stroohm.sensor import StroohmSensor
 
 _LOGGER = logging.getLogger(__name__)
 
+SENSOR_DESCRIPTIONS = SensorEntityDescription(
+    key=ID_STATE,
+    translation_key="state",
+    name="State",
+)
+ENERGY_SENSOR_DESCRIPTIONS = (
+    SensorEntityDescription(
+        key=ID_TOTAL_ENERGY,
+        translation_key="total",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        name="Total energy",
+    ),
+    SensorEntityDescription(
+        key=ID_SESSION_ENERGY,
+        translation_key="session",
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL,
+        name="Session energy",
+    ),
+)
+POWER_SENSOR_DESCRIPTIONS = (
+    SensorEntityDescription(
+        key=ID_INSTANTANEOUS_POWER,
+        translation_key="instant",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        name="Instantaneous power",
+    ),
+    SensorEntityDescription(
+        key=ID_INSTANTANEOUS_POWER_PHASE_1,
+        translation_key="instantPhase1",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        name="Instantaneous power, phase 1",
+    ),
+    SensorEntityDescription(
+        key=ID_INSTANTANEOUS_POWER_PHASE_2,
+        translation_key="instantPhase2",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        name="Instantaneous power, phase 2",
+    ),
+    SensorEntityDescription(
+        key=ID_INSTANTANEOUS_POWER_PHASE_3,
+        translation_key="instantPhase3",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        name="Instantaneous power, phase 3",
+    ),
+)
 
-async def add_entities_for_stations(
-    hass, async_add_entities, stations, api: StroohmApi
-):
-    station_codes = [station.code for station in stations]
-    _LOGGER.log("Adding entities for stations", extra={len(station_codes)})
 
-    await _add_entities_for_stations_real_kpi_data(
-        hass, async_add_entities, stations, api
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: StroohmConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up stroohm sensors based on a config entry."""
+    stroohm = entry.runtime_data.websocket
+
+    async_add_entities(
+        StroohmEnergySensor(stroohm, description)
+        for description in ENERGY_SENSOR_DESCRIPTIONS
     )
-    await _add_entities_for_stations_year_kpi_data(
-        hass, async_add_entities, stations, api
+    async_add_entities(
+        StroohmPowerSensor(stroohm, description)
+        for description in POWER_SENSOR_DESCRIPTIONS
     )
-
-    devices = await hass.async_add_executor_job(api.get_dev_list, station_codes)
-    devices_grouped_per_type_id = {}
-    for device in devices:
-        if device.type_id not in devices_grouped_per_type_id:
-            devices_grouped_per_type_id[device.type_id] = []
-        devices_grouped_per_type_id[device.type_id].append(str(device.device_id))
-
-    await _add_static_entities_for_devices(async_add_entities, devices)
-
-    coordinator = DeviceRealKpiDataCoordinator(hass, api, devices)
-
-    # Fetch initial data so we have data when entities subscribe
-    # TODO
-    await coordinator.async_refresh()
-
-    for device in devices:
-        async_add_entities(
-            [
-                StroohmPowerEntityRealtimeInWatt(
-                    coordinator,
-                    f"{DOMAIN}-{device.device_id}-{ID_REALTIME_POWER}",
-                    f"{device.readable_name} - {NAME_REALTIME_POWER}",
-                    ATTR_DEVICE_REAL_KPI_ACTIVE_POWER,
-                    f"{DOMAIN}-{device.device_id}",
-                    device.device_info(),
-                ),
-            ]
-        )
-
-        entities_to_create = [
-            {
-                "class": "StroohmRealtimeDeviceDataTranslatedSensor",
-                "attribute": "meter_status",
-                "name": "Meter status",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataVoltageSensor",
-                "attribute": "meter_u",
-                "name": "Grid voltage",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataCurrentSensor",
-                "attribute": "meter_i",
-                "name": "Grid current",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataPowerInWattSensor",
-                "attribute": "active_power",
-                "name": "Active power",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataReactivePowerInVarSensor",
-                "attribute": "reactive_power",
-                "name": "Reactive power",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataPowerFactorSensor",
-                "attribute": "power_factor",
-                "name": "Power factor",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataFrequencySensor",
-                "attribute": "grid_frequency",
-                "name": "Grid frequency",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataEnergySensor",
-                "attribute": "active_cap",
-                "name": "Active energy (forward active energy)",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataEnergySensor",
-                "attribute": "reverse_active_cap",
-                "name": "Reverse active energy",
-            },
-            {
-                "class": "StroohmRealtimeDeviceDataStateBinarySensor",
-                "attribute": "run_state",
-                "name": "Status",
-            },
-        ]
-
-        entities = []
-        for entity_to_create in entities_to_create:
-            class_name = globals()[entity_to_create["class"]]
-            entities.append(
-                class_name(
-                    coordinator,
-                    device,
-                    entity_to_create["name"],
-                    entity_to_create["attribute"],
-                )
-            )
-
-        async_add_entities(entities)
-
-
-async def _add_entities_for_stations_real_kpi_data(
-    hass, async_add_entities, stations, api: StroohmApi
-):
-    station_codes = [station.code for station in stations]
-    _LOGGER.log(
-        "Adding stations_real_kpi_data entities for stations",
-        extra={len(station_codes)},
-    )
-
-    async def async_update_station_real_kpi_data():
-        """Fetch data."""
-        data = {}
-
-        if station_codes is None or len(station_codes) == 0:
-            return data
-
-        try:
-            response = await hass.async_add_executor_job(
-                api.get_station_real_kpi, station_codes
-            )
-        except StroohmApiError as error:
-            raise UpdateFailed(f"OpenAPI Error: {error}")
-
-        for response_data in response:
-            data[f"{DOMAIN}-{response_data[ATTR_STATION_CODE]}"] = response_data[
-                ATTR_STATION_REAL_KPI_DATA_ITEM_MAP
-            ]
-
-        return data
-
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name="StroohmApiStationRealKpi",
-        update_method=async_update_station_real_kpi_data,
-        update_interval=timedelta(seconds=600),
-    )
-
-    # Fetch initial data so we have data when entities subscribe
-    await coordinator.async_refresh()
-
-    for station in stations:
-        entities_to_create = [
-            {
-                "class": "StroohmStationAttributeEntity",
-                "name": "Station Code",
-                "suffix": "station_code",
-                "value": station.code,
-            },
-            {
-                "class": "StroohmStationAttributeEntity",
-                "name": "Station Name",
-                "suffix": "station_name",
-                "value": station.name,
-            },
-            {
-                "class": "StroohmStationAddressEntity",
-                "name": "Station Address",
-                "suffix": "station_address",
-                "value": station.address,
-            },
-            {
-                "class": "StroohmStationCapacityEntity",
-                "name": "Capacity",
-                "suffix": "capacity",
-                "value": station.capacity,
-            },
-            {
-                "class": "StroohmStationContactPersonEntity",
-                "name": "Contact Person",
-                "suffix": "contact_person",
-                "value": station.contact_person,
-            },
-            {
-                "class": "StroohmStationContactPersonPhoneEntity",
-                "name": "Contact Phone",
-                "suffix": "contact_phone",
-                "value": station.contact_phone,
-            },
-        ]
-
-        entities = []
-        for entity_to_create in entities_to_create:
-            class_name = globals()[entity_to_create["class"]]
-            entities.append(
-                class_name(
-                    station,
-                    entity_to_create["name"],
-                    entity_to_create["suffix"],
-                    entity_to_create["value"],
-                )
-            )
-        async_add_entities(entities)
-
-        async_add_entities(
-            [
-                StroohmEnergySensorTotalCurrentDay(
-                    coordinator,
-                    f"{DOMAIN}-{station.code}-{ID_TOTAL_CURRENT_DAY_ENERGY}",
-                    f"{station.readable_name} - {NAME_TOTAL_CURRENT_DAY_ENERGY}",
-                    ATTR_STATION_REAL_KPI_TOTAL_CURRENT_DAY_ENERGY,
-                    f"{DOMAIN}-{station.code}",
-                    station.device_info(),
-                )
-            ]
-        )
-
-
-async def _add_entities_for_stations_year_kpi_data(
-    hass, async_add_entities, stations, api: StroohmApi
-):
-    station_codes = [station.code for station in stations]
-    _LOGGER.log(
-        "Adding stations_year_kpi_data entities for stations",
-        extra={len(station_codes)},
-    )
-
-    async def async_update_station_year_kpi_data():
-        data = {}
-
-        if station_codes is None or len(station_codes) == 0:
-            return data
-
-        try:
-            response = await hass.async_add_executor_job(
-                api.get_kpi_station_year, station_codes
-            )
-        except StroohmApiError as error:
-            raise UpdateFailed(f"OpenAPI Error: {error}")
-
-        for response_data in response:
-            key = f"{DOMAIN}-{response_data[ATTR_STATION_CODE]}"
-
-            if key not in data:
-                data[key] = {}
-
-            data[key][response_data[ATTR_DATA_COLLECT_TIME]] = response_data[
-                ATTR_STATION_REAL_KPI_DATA_ITEM_MAP
-            ]
-
-        _LOGGER.log("async_update_station_year_kpi_data.", extra={data})
-
-        return data
-
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name="StroohmOpenAPIStationYearKpi",
-        update_method=async_update_station_year_kpi_data,
-        update_interval=timedelta(hours=1),
-    )
-
-    # Fetch initial data so we have data when entities subscribe
-    await coordinator.async_refresh()
-
-    for station in stations:
-        entities_to_create = [
-            {"class": "StroohmYearPlantDataInstalledCapacitySensor"},
-            {"class": "StroohmYearPlantDataRadiationIntensitySensor"},
-            {"class": "StroohmYearPlantDataTheoryPowerSensor"},
-            {"class": "StroohmYearPlantDataPerformanceRatioSensor"},
-            {"class": "StroohmYearPlantDataInverterPowerSensor"},
-            {"class": "StroohmBackwardsCompatibilityTotalCurrentYear"},
-            {"class": "StroohmYearPlantDataOngridPowerSensor"},
-            {"class": "StroohmYearPlantDataUsePowerSensor"},
-            {"class": "StroohmYearPlantDataPowerProfitSensor"},
-            {"class": "StroohmYearPlantDataPerpowerRatioSensor"},
-            {"class": "StroohmYearPlantDataReductionTotalCo2Sensor"},
-            {"class": "StroohmYearPlantDataReductionTotalCoalSensor"},
-            {"class": "StroohmYearPlantDataReductionTotalTreeSensor"},
-            {"class": "StroohmLifetimePlantDataInverterPowerSensor"},
-            {"class": "StroohmLifetimePlantDataOngridPowerSensor"},
-            {"class": "StroohmLifetimePlantDataUsePowerSensor"},
-            {"class": "StroohmLifetimePlantDataPowerProfitSensor"},
-            {"class": "StroohmLifetimePlantDataPerpowerRatioSensor"},
-            {"class": "StroohmLifetimePlantDataReductionTotalCo2Sensor"},
-            {"class": "StroohmLifetimePlantDataReductionTotalCoalSensor"},
-            {"class": "StroohmLifetimePlantDataReductionTotalTreeSensor"},
-        ]
-
-        entities = []
-        for entity_to_create in entities_to_create:
-            class_name = globals()[entity_to_create["class"]]
-            entities.append(class_name(coordinator, station))
-        async_add_entities(entities)
-
-
-async def _add_static_entities_for_devices(async_add_entities, devices):
-    for device in devices:
-        entities_to_create = [
-            {
-                "class": "StroohmDeviceAttributeEntity",
-                "name": "Device ID",
-                "suffix": "device_id",
-                "value": device.device_id,
-            },
-            {
-                "class": "StroohmDeviceAttributeEntity",
-                "name": "Device name",
-                "suffix": "device_name",
-                "value": device.name,
-            },
-            {
-                "class": "StroohmDeviceAttributeEntity",
-                "name": "Station code",
-                "suffix": "station_code",
-                "value": device.station_code,
-            },
-            {
-                "class": "StroohmDeviceAttributeEntity",
-                "name": "Serial number",
-                "suffix": "esn_code",
-                "value": device.esn_code,
-            },
-            {
-                "class": "StroohmDeviceAttributeEntity",
-                "name": "Device type ID",
-                "suffix": "device_type_id",
-                "value": device.type_id,
-            },
-            {
-                "class": "StroohmDeviceAttributeEntity",
-                "name": "Device type",
-                "suffix": "device_type",
-                "value": device.device_type,
-            },
-            {
-                "class": "StroohmDeviceLatitudeEntity",
-                "name": "Latitude",
-                "suffix": "latitude",
-                "value": device.latitude,
-            },
-            {
-                "class": "StroohmDeviceLongitudeEntity",
-                "name": "Longitude",
-                "suffix": "longitude",
-                "value": device.longitude,
-            },
-        ]
-
-        entities = []
-        for entity_to_create in entities_to_create:
-            class_name = globals()[entity_to_create["class"]]
-            entities.append(
-                class_name(
-                    device,
-                    entity_to_create["name"],
-                    entity_to_create["suffix"],
-                    entity_to_create["value"],
-                )
-            )
-        async_add_entities(entities)
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    config = hass.data[DOMAIN][config_entry.entry_id]
-    # Update our config to include new repos and remove those that have been removed.
-    if config_entry.options:
-        config.update(config_entry.options)
-
-    if config[CONF_CREDENTIALS]:
-        # get stations from openapi
-        api = StroohmApi(
-            config[CONF_CREDENTIALS][CONF_HOST],
-            config[CONF_CREDENTIALS][CONF_PASSWORD],
-        )
-        stations = ["station"] * 101
-
-        if not stations:
-            _LOGGER.error("No stations found")
-            raise IntegrationError("No stations found in OpenAPI")
-
-        if len(stations) > 100:
-            _LOGGER.error("More than 100 stations found, which is not a good idea!")
-
-        # TODO
-        # await add_entities_for_stations(hass, async_add_entities, stations, api)
+    async_add_entities([StroohmSensor(stroohm, SENSOR_DESCRIPTIONS)])
