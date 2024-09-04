@@ -1,4 +1,4 @@
-"""Stroohm Api to call."""
+"""Zencharger Api to call."""
 
 import logging
 from typing import Any
@@ -6,16 +6,16 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_PASSWORD
 
 from .const import CONF_CREDENTIALS, DOMAIN
-from .stroohm.stroohm_api import StroohmApi, StroohmApiError
+from .zencharger.zencharger_api import ZenchargerApi, ZenchargerApiError
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class StroohmConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Config Flow of Stroohm Integration."""
+class ZenchargerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Config Flow of Zencharger Integration."""
 
     data: dict[str, Any] | None = {CONF_CREDENTIALS: {}}
 
@@ -28,7 +28,7 @@ class StroohmConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                api = StroohmApi(
+                api = ZenchargerApi(
                     user_input[CONF_HOST],
                     user_input[CONF_PASSWORD],
                 )
@@ -40,11 +40,11 @@ class StroohmConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
 
                 return self.async_create_entry(
-                    title="Stroohm",
+                    title="Zencharger",
                     data=self.data,
                 )
 
-            except StroohmApiError as error:
+            except ZenchargerApiError as error:
                 _LOGGER.log(error)
                 errors["base"] = "invalid_credentials"
 

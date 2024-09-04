@@ -1,4 +1,4 @@
-"""Constants for the Stroohm API."""
+"""Constants for the Zencharger API."""
 
 # Attributes
 ATTR_FAIL_CODE = "failCode"

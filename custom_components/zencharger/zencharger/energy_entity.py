@@ -2,20 +2,20 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.helpers.entity import EntityDescription
 
-from .entity import StroohmEntity
-from .stroohm_websocket import StroohmWebSocket
+from .entity import ZenchargerEntity
+from .zencharger_websocket import ZenchargerWebSocket
 
 
-class StroohmEnergyEntity(StroohmEntity):
-    """Base class for all StroohmEnergyEntity entities."""
+class ZenchargerEnergyEntity(ZenchargerEntity):
+    """Base class for all ZenchargerEnergyEntity entities."""
 
     def __init__(
         self,
-        stroohm: StroohmWebSocket,
+        zencharger: ZenchargerWebSocket,
         description: EntityDescription,
     ):
         """Initialize the entity"""
-        super().__init__(stroohm, description)
+        super().__init__(zencharger, description)
 
     @property
     def device_class(self):
@@ -26,11 +26,11 @@ class StroohmEnergyEntity(StroohmEntity):
         return UnitOfEnergy.WATT_HOUR
 
 
-class StroohmEnergyEntityRealtime(StroohmEnergyEntity):
+class ZenchargerEnergyEntityRealtime(ZenchargerEnergyEntity):
     pass
 
 
-class StroohmEnergyEntityRealtimeInWatt(StroohmEnergyEntity):
+class ZenchargerEnergyEntityRealtimeInWatt(ZenchargerEnergyEntity):
     @property
     def unit_of_measurement(self):
         return UnitOfPower.WATT

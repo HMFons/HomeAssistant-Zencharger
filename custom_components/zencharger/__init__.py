@@ -1,4 +1,4 @@
-"""Custom integration to integrate Stroohm dashboard with Home Assistant."""
+"""Custom integration to integrate Zencharger dashboard with Home Assistant."""
 
 import logging
 
@@ -9,22 +9,22 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
-from .stroohm.stroohm_api import StroohmApi
-from .stroohm.stroohm_websocket import WebSocketError
+from .zencharger.zencharger_api import ZenchargerApi
+from .zencharger.zencharger_websocket import WebSocketError
 
 _LOGGER = logging.getLogger(__name__)
 
-type StroohmConfigEntry = ConfigEntry[StroohmApi]
+type ZenchargerConfigEntry = ConfigEntry[ZenchargerApi]
 
 
 async def async_setup(hass: HomeAssistant, _: ConfigType) -> bool:
-    """Set up the Stroohm component from yaml configuration."""
+    """Set up the Zencharger component from yaml configuration."""
     hass.data.setdefault(DOMAIN, {})
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up the Stroohm component from a ConfigEntry."""
+    """Set up the Zencharger component from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
 
     hass.data[DOMAIN][entry.entry_id] = entry.data
@@ -34,7 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])
     )
 
-    api = StroohmApi(hass, entry)
+    api = ZenchargerApi(hass, entry)
 
     try:
         await api.ws_connect()

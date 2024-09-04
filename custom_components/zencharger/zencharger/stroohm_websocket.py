@@ -37,8 +37,8 @@ def async_hydrate_data(data: dict[str, str]) -> dict[str, str]:
     }
 
 
-class StroohmWebSocket:
-    """Define a class to handle the Stroohm websocket."""
+class ZenchargerWebSocket:
+    """Define a class to handle the Zencharger websocket."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize."""

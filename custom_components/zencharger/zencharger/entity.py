@@ -4,23 +4,23 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity, EntityDescription
 
 from ..const import DOMAIN
-from .stroohm_websocket import StroohmWebSocket
+from .zencharger_websocket import ZenchargerWebSocket
 
 
-class StroohmEntity(Entity):
-    """Base class for all Stroohm entities."""
+class ZenchargerEntity(Entity):
+    """Base class for all Zencharger entities."""
 
     def __init__(
         self,
-        stroohm: StroohmWebSocket,
+        zencharger: ZenchargerWebSocket,
         description: EntityDescription,
     ):
         """Initialize the entity"""
-        self._stroohm = stroohm
+        self._zencharger = zencharger
         self.entity_description = description
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, "Zencharger")},
-            manufacturer="Stroohm",
+            manufacturer="Zencharger",
             name="Zencharger".capitalize(),
         )
         self._attr_unique_id = f"{description.key}"
@@ -28,7 +28,7 @@ class StroohmEntity(Entity):
     @callback
     def _async_update(self) -> None:
         """Update the state."""
-        last_data = self._stroohm.charger
+        last_data = self._zencharger.charger
         key = self.entity_description.key
         self._attr_available = last_data.get(key) is not None
         self.update_from_latest_data()

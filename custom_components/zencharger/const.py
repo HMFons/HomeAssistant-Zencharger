@@ -1,7 +1,7 @@
-"""Constants for the Stroohm integration."""
+"""Constants for the Zencharger integration."""
 
 # Base constants
-DOMAIN = "stroohm"
+DOMAIN = "zencharger"
 
 # Configuration
 CONF_CREDENTIALS = "credentials"

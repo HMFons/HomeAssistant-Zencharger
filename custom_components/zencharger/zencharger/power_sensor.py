@@ -4,25 +4,25 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import callback
 from homeassistant.helpers.entity import EntityDescription
 
-from .energy_entity import StroohmEnergyEntity
-from .stroohm_websocket import StroohmWebSocket
+from .power_entity import ZenchargerPowerEntity
+from .zencharger_websocket import ZenchargerWebSocket
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class StroohmEnergySensor(StroohmEnergyEntity, SensorEntity):
-    """Base class for all StroohmEnergySensor sensors."""
+class ZenchargerPowerSensor(ZenchargerPowerEntity, SensorEntity):
+    """Base class for all ZenchargerPowerSensor sensors."""
 
     def __init__(
         self,
-        stroohm: StroohmWebSocket,
+        zencharger: ZenchargerWebSocket,
         description: EntityDescription,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(stroohm, description)
+        super().__init__(zencharger, description)
 
     @callback
     def update_from_latest_data(self) -> None:
         """Fetch new state data for the sensor."""
-        raw = self._stroohm.charger[self.entity_description.key]
+        raw = self._zencharger.charger[self.entity_description.key]
         self._attr_native_value = raw

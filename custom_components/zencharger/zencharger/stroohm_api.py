@@ -1,4 +1,4 @@
-"""API client for Stroohm Dashboard."""
+"""API client for Zencharger Dashboard."""
 
 import logging
 
@@ -9,12 +9,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import ATTR_DATA, ATTR_FAIL_CODE
-from .stroohm_websocket import StroohmWebSocket
+from .zencharger_websocket import ZenchargerWebSocket
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class StroohmApi:
+class ZenchargerApi:
     """Api class."""
 
     @property
@@ -25,7 +25,7 @@ class StroohmApi:
         self._sessionId = None
         self._host = entry.data["credentials"]["host"]
         self._password = entry.data["credentials"]["password"]
-        self._websocket = StroohmWebSocket(hass, entry)
+        self._websocket = ZenchargerWebSocket(hass, entry)
 
     async def ws_connect(self):
         if self._sessionId is None:
@@ -51,9 +51,9 @@ class StroohmApi:
                 self._sessionId = response.headers["Set-Cookie"]
                 return response.headers.get("Set-Cookie")
 
-            raise StroohmApiError("Could not login with given credentials")
+            raise ZenchargerApiError("Could not login with given credentials")
         except Exception as error:
-            raise StroohmApiError("Could not login with given credentials")
+            raise ZenchargerApiError("Could not login with given credentials")
 
     def status(self) -> str:
         """Get status from API."""
@@ -71,9 +71,9 @@ class StroohmApi:
                 self._sessionId = response.headers["Set-Cookie"]
                 return response.headers.get("Set-Cookie")
 
-            raise StroohmApiError("Could not get status")
+            raise ZenchargerApiError("Could not get status")
         except Exception as error:
-            raise StroohmApiError("Could not get status")
+            raise ZenchargerApiError("Could not get status")
 
     def _do_call(self, url: str, body: dict):
         if self._sessionId is None:
@@ -96,12 +96,12 @@ class StroohmApi:
                 return self._do_call(url, body)
 
             if ATTR_FAIL_CODE in json_data and json_data[ATTR_FAIL_CODE] != 0:
-                raise StroohmApiError(
+                raise ZenchargerApiError(
                     f"Retrieving the data for {url} failed with failCode: {json_data[ATTR_FAIL_CODE]}, message: {json_data[ATTR_DATA]}"
                 )
 
             if ATTR_DATA not in json_data:
-                raise StroohmApiError(
+                raise ZenchargerApiError(
                     f"Retrieving the data failed. Raw response: {response.text}"
                 )
 
@@ -112,13 +112,13 @@ class StroohmApi:
             _LOGGER.error(response.text)
 
 
-class StroohmApiError(Exception):
-    """Generic Stroohm Api error."""
+class ZenchargerApiError(Exception):
+    """Generic Zencharger Api error."""
 
 
-class StroohmApiAccessFrequencyTooHighError(StroohmApiError):
+class ZenchargerApiAccessFrequencyTooHighError(ZenchargerApiError):
     pass
 
 
-class StroohmApiErrorInvalidAccessToCurrentInterfaceError(StroohmApiError):
+class ZenchargerApiErrorInvalidAccessToCurrentInterfaceError(ZenchargerApiError):
     pass

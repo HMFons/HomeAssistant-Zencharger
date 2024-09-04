@@ -1,4 +1,4 @@
-"""Stroohm sensor."""
+"""Zencharger sensor."""
 
 import logging
 
@@ -11,7 +11,7 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import StroohmConfigEntry
+from . import ZenchargerConfigEntry
 from .const import (
     ID_INSTANTANEOUS_POWER,
     ID_INSTANTANEOUS_POWER_PHASE_1,
@@ -21,9 +21,9 @@ from .const import (
     ID_STATE,
     ID_TOTAL_ENERGY,
 )
-from .stroohm.energy_sensor import StroohmEnergySensor
-from .stroohm.power_sensor import StroohmPowerSensor
-from .stroohm.sensor import StroohmSensor
+from .zencharger.energy_sensor import ZenchargerEnergySensor
+from .zencharger.power_sensor import ZenchargerPowerSensor
+from .zencharger.sensor import ZenchargerSensor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -88,18 +88,18 @@ POWER_SENSOR_DESCRIPTIONS = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: StroohmConfigEntry,
+    entry: ZenchargerConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up stroohm sensors based on a config entry."""
-    stroohm = entry.runtime_data.websocket
+    """Set up zencharger sensors based on a config entry."""
+    zencharger = entry.runtime_data.websocket
 
     async_add_entities(
-        StroohmEnergySensor(stroohm, description)
+        ZenchargerEnergySensor(zencharger, description)
         for description in ENERGY_SENSOR_DESCRIPTIONS
     )
     async_add_entities(
-        StroohmPowerSensor(stroohm, description)
+        ZenchargerPowerSensor(zencharger, description)
         for description in POWER_SENSOR_DESCRIPTIONS
     )
-    async_add_entities([StroohmSensor(stroohm, SENSOR_DESCRIPTIONS)])
+    async_add_entities([ZenchargerSensor(zencharger, SENSOR_DESCRIPTIONS)])
