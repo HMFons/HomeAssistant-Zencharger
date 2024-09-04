@@ -8,8 +8,8 @@ from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.typing import ConfigType
 
-from custom_components.zencharger.zencharger.api import ZenchargerApi
-from custom_components.zencharger.zencharger.websocket import WebSocketError
+from .zencharger.api import ZenchargerApi
+from .zencharger.websocket import WebSocketError
 
 from .const import DOMAIN
 

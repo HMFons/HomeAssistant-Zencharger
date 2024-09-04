@@ -29,21 +29,18 @@ class ZenchargerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                api = ZenchargerApi(
-                    user_input[CONF_HOST],
-                    user_input[CONF_PASSWORD],
-                )
-                _ = await self.hass.async_add_executor_job(api.login)
-
+               
                 self.data[CONF_CREDENTIALS] = {
                     CONF_HOST: user_input[CONF_HOST],
                     CONF_PASSWORD: user_input[CONF_PASSWORD],
                 }
 
-                return self.async_create_entry(
+                entry = await self.async_create_entry(
                     title="Zencharger",
                     data=self.data,
                 )
+                api = ZenchargerApi(self.hass, entry)
+                _ = await self.hass.async_add_executor_job(api.login)
 
             except ZenchargerApiError as error:
                 _LOGGER.log(error)
