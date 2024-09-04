@@ -1,0 +1,309 @@
+{
+	"info": {
+		"_postman_id": "ddee17cf-6abd-4564-80a0-aa6028897404",
+		"name": "Zencharger",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28239758"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"SessionId\", pm.cookies.get('sessionid'));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Password\": \"{{PW}}\",\r\n    \"PersistentSession\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/v1/auth/login",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/api/v1/auth/logout",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Status",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/auth/status",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/config/user",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"config",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Network",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/config/network",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"config",
+						"network"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Session",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/statistics/session",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"statistics",
+						"session"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "History",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/statistics/history",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"statistics",
+						"history"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Scan Home Wizard",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/network/scanhomewizard",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"network",
+						"scanhomewizard"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Info",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/system/info",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"system",
+						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Current Versions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/system/software/automatic-update/current-versions",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"system",
+						"software",
+						"automatic-update",
+						"current-versions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Available Versions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{SessionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/api/v1/system/software/automatic-update/available-versions",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"system",
+						"software",
+						"automatic-update",
+						"available-versions"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
