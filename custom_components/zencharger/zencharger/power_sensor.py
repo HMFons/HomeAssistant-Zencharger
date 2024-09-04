@@ -5,7 +5,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.entity import EntityDescription
 
 from .power_entity import ZenchargerPowerEntity
-from .zencharger_websocket import ZenchargerWebSocket
+from .websocket import ZenchargerWebSocket
 
 _LOGGER = logging.getLogger(__name__)
 

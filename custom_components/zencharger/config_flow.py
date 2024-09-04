@@ -8,8 +8,9 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD
 
+from .zencharger.api import ZenchargerApi, ZenchargerApiError
+
 from .const import CONF_CREDENTIALS, DOMAIN
-from .zencharger.zencharger_api import ZenchargerApi, ZenchargerApiError
 
 _LOGGER = logging.getLogger(__name__)
 

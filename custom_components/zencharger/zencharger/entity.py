@@ -4,7 +4,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity, EntityDescription
 
 from ..const import DOMAIN
-from .zencharger_websocket import ZenchargerWebSocket
+from .websocket import ZenchargerWebSocket
 
 
 class ZenchargerEntity(Entity):
