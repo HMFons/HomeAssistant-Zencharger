@@ -5,6 +5,7 @@ DOMAIN = "zencharger"
 
 # Configuration
 CONF_CREDENTIALS = "credentials"
+CONF_DATA = "data"
 CONF_HOST = "host"
 CONF_PASSWORD = "password"
 

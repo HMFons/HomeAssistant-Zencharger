@@ -8,6 +8,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD
 
+from .zencharger.api import ZenchargerApi, ZenchargerApiError
+
 from .const import CONF_CREDENTIALS, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,15 +28,25 @@ class ZenchargerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            
-            self.data[CONF_CREDENTIALS] = {
-                CONF_HOST: user_input[CONF_HOST],
-                CONF_PASSWORD: user_input[CONF_PASSWORD],
-            }
-            self.async_create_entry(
-                title="Zencharger",
-                data=self.data,
-            )
+            try:
+               
+                self.data[CONF_CREDENTIALS] = {
+                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_PASSWORD: user_input[CONF_PASSWORD],
+                }
+
+                entry = self.async_create_entry(
+                    title="Zencharger",
+                    data=self.data,
+                )
+
+                api = ZenchargerApi(self.hass, entry)
+                _ = await self.hass.async_add_executor_job(api.login)
+
+                return entry
+            except ZenchargerApiError as error:
+                _LOGGER.log(error)
+                errors["base"] = "invalid_credentials"
 
         return self.async_show_form(
             data_schema=vol.Schema(
