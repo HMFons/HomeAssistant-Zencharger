@@ -5,6 +5,11 @@ DOMAIN = "zencharger"
 
 # Configuration
 CONF_CREDENTIALS = "credentials"
+<<<<<<< HEAD
+=======
+CONF_HOST = "host"
+CONF_PASSWORD = "password"
+>>>>>>> 4e62ab4 (chore: use parameters as keys)
 
 # Possible ID suffixes
 ID_REALTIME_POWER = "realtime_power"

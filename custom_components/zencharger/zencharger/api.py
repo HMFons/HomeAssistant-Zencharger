@@ -8,6 +8,11 @@ from requests import get
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
+<<<<<<< HEAD
+=======
+from ..const import CONF_CREDENTIALS, CONF_HOST, CONF_PASSWORD
+
+>>>>>>> 4e62ab4 (chore: use parameters as keys)
 from .websocket import ZenchargerWebSocket
 
 from .const import ATTR_DATA, ATTR_FAIL_CODE
@@ -24,8 +29,13 @@ class ZenchargerApi:
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry):
         self._sessionId = None
+<<<<<<< HEAD
         self._host = entry.data["credentials"]["host"]
         self._password = entry.data["credentials"]["password"]
+=======
+        self._host = entry.data[CONF_CREDENTIALS][CONF_HOST]
+        self._password = entry.data[CONF_CREDENTIALS][CONF_PASSWORD]
+>>>>>>> 4e62ab4 (chore: use parameters as keys)
         self._websocket = ZenchargerWebSocket(hass, entry)
 
     async def ws_connect(self):

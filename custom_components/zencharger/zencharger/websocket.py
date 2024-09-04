@@ -9,6 +9,11 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import dispatcher_send
 
 from ..const import (
+<<<<<<< HEAD
+=======
+    CONF_CREDENTIALS,
+    CONF_HOST,
+>>>>>>> 4e62ab4 (chore: use parameters as keys)
     ID_INSTANTANEOUS_POWER,
     ID_INSTANTANEOUS_POWER_PHASE_1,
     ID_INSTANTANEOUS_POWER_PHASE_2,
@@ -43,7 +48,11 @@ class ZenchargerWebSocket:
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize."""
         self._hass = hass
+<<<<<<< HEAD
         self._host = entry.data["credentials"]["host"]
+=======
+        self._host = entry.data[CONF_CREDENTIALS][CONF_HOST]
+>>>>>>> 4e62ab4 (chore: use parameters as keys)
         self._entry_setup_complete = False
         self._ws_reconnect_delay = DEFAULT_SOCKET_MIN_RETRY
         self.charger: dict[str, str] = {
