@@ -8,8 +8,9 @@ from requests import get
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
+from .websocket import ZenchargerWebSocket
+
 from .const import ATTR_DATA, ATTR_FAIL_CODE
-from .zencharger_websocket import ZenchargerWebSocket
 
 _LOGGER = logging.getLogger(__name__)
 

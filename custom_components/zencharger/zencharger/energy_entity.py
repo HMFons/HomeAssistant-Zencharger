@@ -3,7 +3,7 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.helpers.entity import EntityDescription
 
 from .entity import ZenchargerEntity
-from .zencharger_websocket import ZenchargerWebSocket
+from .websocket import ZenchargerWebSocket
 
 
 class ZenchargerEnergyEntity(ZenchargerEntity):

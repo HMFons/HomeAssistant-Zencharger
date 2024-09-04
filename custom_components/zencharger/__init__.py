@@ -8,9 +8,10 @@ from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.typing import ConfigType
 
+from custom_components.zencharger.zencharger.api import ZenchargerApi
+from custom_components.zencharger.zencharger.websocket import WebSocketError
+
 from .const import DOMAIN
-from .zencharger.zencharger_api import ZenchargerApi
-from .zencharger.zencharger_websocket import WebSocketError
 
 _LOGGER = logging.getLogger(__name__)
 
