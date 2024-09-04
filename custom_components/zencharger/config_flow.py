@@ -35,11 +35,7 @@ class ZenchargerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_PASSWORD: user_input[CONF_PASSWORD],
                 }
 
-<<<<<<< HEAD
-                entry = await self.async_create_entry(
-=======
                 entry = self.async_create_entry(
->>>>>>> 4e62ab4 (chore: use parameters as keys)
                     title="Zencharger",
                     data=self.data,
                 )
