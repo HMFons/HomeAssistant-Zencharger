@@ -20,6 +20,7 @@ from .const import (
     ID_SESSION_ENERGY,
     ID_STATE,
     ID_TOTAL_ENERGY,
+    DOMAIN,
 )
 from .zencharger.energy_sensor import ZenchargerEnergySensor
 from .zencharger.power_sensor import ZenchargerPowerSensor
@@ -28,13 +29,13 @@ from .zencharger.sensor import ZenchargerSensor
 _LOGGER = logging.getLogger(__name__)
 
 SENSOR_DESCRIPTIONS = SensorEntityDescription(
-    key=ID_STATE,
+    key=DOMAIN + "." + ID_STATE,
     translation_key="state",
     name="State",
 )
 ENERGY_SENSOR_DESCRIPTIONS = (
     SensorEntityDescription(
-        key=ID_TOTAL_ENERGY,
+        key=DOMAIN + "." + ID_TOTAL_ENERGY,
         translation_key="total",
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
@@ -42,7 +43,7 @@ ENERGY_SENSOR_DESCRIPTIONS = (
         name="Total energy",
     ),
     SensorEntityDescription(
-        key=ID_SESSION_ENERGY,
+        key=DOMAIN + "." + ID_SESSION_ENERGY,
         translation_key="session",
         native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
@@ -52,7 +53,7 @@ ENERGY_SENSOR_DESCRIPTIONS = (
 )
 POWER_SENSOR_DESCRIPTIONS = (
     SensorEntityDescription(
-        key=ID_INSTANTANEOUS_POWER,
+        key=DOMAIN + "." + ID_INSTANTANEOUS_POWER,
         translation_key="instant",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
@@ -60,7 +61,7 @@ POWER_SENSOR_DESCRIPTIONS = (
         name="Instantaneous power",
     ),
     SensorEntityDescription(
-        key=ID_INSTANTANEOUS_POWER_PHASE_1,
+        key=DOMAIN + "." + ID_INSTANTANEOUS_POWER_PHASE_1,
         translation_key="instantPhase1",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
@@ -68,7 +69,7 @@ POWER_SENSOR_DESCRIPTIONS = (
         name="Instantaneous power, phase 1",
     ),
     SensorEntityDescription(
-        key=ID_INSTANTANEOUS_POWER_PHASE_2,
+        key=DOMAIN + "." + ID_INSTANTANEOUS_POWER_PHASE_2,
         translation_key="instantPhase2",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
@@ -76,7 +77,7 @@ POWER_SENSOR_DESCRIPTIONS = (
         name="Instantaneous power, phase 2",
     ),
     SensorEntityDescription(
-        key=ID_INSTANTANEOUS_POWER_PHASE_3,
+        key=DOMAIN + "." + ID_INSTANTANEOUS_POWER_PHASE_3,
         translation_key="instantPhase3",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
